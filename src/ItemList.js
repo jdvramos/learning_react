@@ -5,7 +5,7 @@ const ItemList = ({ items, handleCheck, handleDelete }) => {
     <ul>
       {items.map((item) => (
         <LineItem
-          key={item.id} // I don't know why we need to pass this one.
+          key={item.id}
           item={item}
           handleCheck={handleCheck}
           handleDelete={handleDelete}
