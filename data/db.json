@@ -2,18 +2,13 @@
   "items": [
     {
       "id": 1,
-      "checked": false,
+      "checked": true,
       "item": "Almonds, Unsalted, in the blue bag"
     },
     {
-      "id": 2,
+      "id": 5,
       "checked": false,
-      "item": "Pizza"
-    },
-    {
-      "id": 3,
-      "checked": false,
-      "item": "Bread"
+      "item": "Pancit Canton"
     }
   ]
 }
