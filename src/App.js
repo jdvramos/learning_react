@@ -3,24 +3,56 @@ import SearchItem from "./SearchItem";
 import AddItem from "./AddItem";
 import Content from "./Content";
 import Footer from "./Footer";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 function App() {
-  const [items, setItems] = useState(
-    JSON.parse(localStorage.getItem("shoppinglist")) || []
-  );
+  // useEffect fix
+  const effectRan = useRef(false);
+
+  const API_URL = "http://localhost:3500/items";
+
+  const [items, setItems] = useState([]);
   const [newItem, setNewItem] = useState("");
   const [search, setSearch] = useState("");
+  const [fetchError, setFetchError] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    localStorage.setItem("shoppinglist", JSON.stringify(items));
-  }, [items]);
+    console.log("mounted");
 
-  // I WILL NOT BE NEEDED ANYMORE :(
-  // const setAndSaveItems = (newItems) => {
-  //   localStorage.setItem("shoppinglist", JSON.stringify(items));
-  //   setItems(newItems);
-  // };
+    if (effectRan.current === false) {
+      const fetchItems = async () => {
+        try {
+          const response = await fetch(API_URL);
+
+          // Guard clause (manual error handling)
+          if (!response.ok) throw Error("Did not receive expected data");
+
+          const listItems = await response.json();
+          setItems(listItems);
+
+          // If we have a successful request we will set the fetchError to null
+          setFetchError(null);
+        } catch (err) {
+          // Set the fetchError to err.message
+          setFetchError(err.message);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      // This is just to simulate the slow loading times when we get data from a real server
+      setTimeout(() => {
+        // This is an async IIFE (this is the same as calling: fetchItems())
+        (async () => await fetchItems())();
+      }, 2000);
+
+      return () => {
+        console.log("unmounted");
+        effectRan.current = true;
+      };
+    }
+  }, []);
 
   const addItem = (item) => {
     const id = items.length ? items[items.length - 1].id + 1 : 1;
@@ -64,13 +96,19 @@ function App() {
         handleSubmit={handleSubmit}
       />
       <SearchItem search={search} setSearch={setSearch} />
-      <Content
-        items={items.filter((item) =>
-          item.item.toLowerCase().includes(search.toLowerCase())
+      <main>
+        {isLoading && <p>Loading Items...</p>}
+        {fetchError && <p style={{ color: "red" }}>{`Error: ${fetchError}`}</p>}
+        {!fetchError && !isLoading && (
+          <Content
+            items={items.filter((item) =>
+              item.item.toLowerCase().includes(search.toLowerCase())
+            )}
+            handleCheck={handleCheck}
+            handleDelete={handleDelete}
+          />
         )}
-        handleCheck={handleCheck}
-        handleDelete={handleDelete}
-      />
+      </main>
       <Footer length={items.length} />
     </div>
   );
